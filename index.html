@@ -23,6 +23,21 @@
       pointer-events:none;
       text-shadow:0 2px 8px rgba(0,0,0,.6);
     }
+
+    #rotateNotice{
+  position: fixed;
+  inset: 0;
+  background: #000;
+  color: #fff;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 10000;
+  font-size: 20px;
+}
+
+    
   </style>
 </head>
 <body>
@@ -126,7 +141,25 @@
 
     // 起動直後は待機（YouTube開始）
     showIdle();
+
+    function checkOrientation(){
+  const isPortrait = window.innerHeight > window.innerWidth;
+  document.getElementById("rotateNotice").style.display =
+    isPortrait ? "flex" : "none";
+}
+
+window.addEventListener("resize", checkOrientation);
+window.addEventListener("orientationchange", checkOrientation);
+checkOrientation();
+
   </script>
+
+  <div id="rotateNotice">
+  横向きにしてご覧ください
+</div>
+
+  
 </body>
 </html>
+
 
