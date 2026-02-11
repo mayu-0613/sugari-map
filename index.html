@@ -9,9 +9,9 @@
     .screen { position:fixed; inset:0; display:none; }
     .screen.active { display:block; }
 
-    /* YouTube待機動画 */
+    /* 待機：MP4動画 */
     #idleVideoWrap { width:100%; height:100%; }
-    #idleVideo { width:100%; height:100%; border:0; background:#000; pointer-events:none; }
+    #idleVideo { width:100%; height:100%; object-fit:cover; background:#000; }
 
     /* Googleスライド */
     iframe { width:100%; height:100%; border:0; background:#000; }
@@ -27,19 +27,20 @@
 </head>
 <body>
 
-  <!-- 待機：YouTube動画ループ -->
+  <!-- 待機：MP4動画ループ（最初は無音） -->
   <div id="idle" class="screen active">
     <div id="idleVideoWrap">
-      <iframe
+      <video
         id="idleVideo"
-        src=""
-        title="Idle video"
-        frameborder="0"
-        allow="autoplay; encrypted-media; picture-in-picture"
-        allowfullscreen
-      ></iframe>
+        src="./main.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+      ></video>
     </div>
-    <div class="hint">画面をタップして開始</div>
+    <div class="hint">①タップで音ON　②もう一度タップで開始</div>
   </div>
 
   <!-- 探索：Googleスライド（スライド1から） -->
@@ -51,30 +52,21 @@
     // ★GoogleスライドID（d/XXXXX の XXXXX）
     const SLIDE_ID = "1XTp8s8WNJa6qFl9K2akNzSv43JRHN-pQ";
 
-    // ★YouTube動画ID（URLの v=XXXX の XXXX）を入れてください
-    const YOUTUBE_ID = "nKfVdy0jiLo";
-
     // 放置で戻るまでの時間（ミリ秒） 60秒 = 60000
     const IDLE_TIMEOUT_MS = 60000;
 
     const idleScreen = document.getElementById("idle");
     const exploreScreen = document.getElementById("explore");
     const slidesFrame = document.getElementById("slides");
-    const idleVideoFrame = document.getElementById("idleVideo");
+    const idleVideo = document.getElementById("idleVideo");
 
     let timer = null;
 
-    function slideEmbedUrl() {
-      // start=false：自動開始しない（タップでリンク探索したい場合）
-      return `https://docs.google.com/presentation/d/${SLIDE_ID}/embed?rm=minimal&start=false`;
-    }
+    // 0: 無音待機中 → 1: 音あり待機中 → 2: 探索中
+    let tapStage = 0;
 
-    function idleYoutubeUrl() {
-      // autoplay=1：自動再生（※mute=1が必須）
-      // loop=1 と playlist=ID：無限ループ
-      // controls=0：UI非表示（誤操作防止）
-      // playsinline=1：モバイルで全画面化しにくくする
-      return `https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&loop=1&playlist=${YOUTUBE_ID}&controls=0&modestbranding=1&playsinline=1&rel=0`;
+    function slideEmbedUrl() {
+      return `https://docs.google.com/presentation/d/${SLIDE_ID}/embed?rm=minimal&start=false`;
     }
 
     function showIdle() {
@@ -84,8 +76,13 @@
       // スライドを止める
       slidesFrame.src = "about:blank";
 
-      // YouTube待機動画を「再読み込み」して確実に再開
-      idleVideoFrame.src = idleYoutubeUrl();
+      // 待機動画を再開（ここでは「音ありのまま」にしておくと展示が楽）
+      // もし「待機に戻ったら毎回無音」にしたいなら下の2行を有効化してね
+      // tapStage = 0;
+      // idleVideo.muted = true;
+
+      idleVideo.currentTime = 0;
+      idleVideo.play().catch(() => {});
 
       clearTimeout(timer);
       timer = null;
@@ -95,8 +92,8 @@
       idleScreen.classList.remove("active");
       exploreScreen.classList.add("active");
 
-      // 探索に入ったらYouTubeを止める（再生継続防止）
-      idleVideoFrame.src = "about:blank";
+      // 探索に入ったら待機動画は止める（音が残らないように）
+      idleVideo.pause();
 
       slidesFrame.src = slideEmbedUrl();
       resetIdleTimer();
@@ -104,29 +101,44 @@
 
     function resetIdleTimer() {
       clearTimeout(timer);
-      timer = setTimeout(showIdle, IDLE_TIMEOUT_MS);
+      timer = setTimeout(() => {
+        tapStage = 0;
+        idleVideo.muted = true;
+        showIdle();
+      }, IDLE_TIMEOUT_MS);
     }
 
-    // 初回タップで探索開始（待機→スライド）
+    // タップ挙動：
+    // 待機画面 1回目：音ON
+    // 待機画面 2回目：探索へ
+    // 探索中：操作があったらタイマー延長
     document.addEventListener("pointerdown", () => {
       if (idleScreen.classList.contains("active")) {
-        showExplore();
+        if (tapStage === 0) {
+          tapStage = 1;
+          idleVideo.muted = false;
+          idleVideo.play().catch(() => {});
+          return;
+        }
+        if (tapStage === 1) {
+          tapStage = 2;
+          showExplore();
+          return;
+        }
       } else {
-        // 探索中の操作は全部“操作あり”扱いにしてタイマー延長
         resetIdleTimer();
       }
     });
 
-    // 触ってる間は戻らないように、よくある操作を全部拾う
+    // 探索中の操作は全部“操作あり”扱いにしてタイマー延長
     ["pointermove","keydown","wheel","touchstart","mousemove"].forEach(ev => {
       document.addEventListener(ev, () => {
         if (exploreScreen.classList.contains("active")) resetIdleTimer();
       }, { passive:true });
     });
 
-    // 起動直後は待機（YouTube開始）
+    // 起動直後は待機
     showIdle();
   </script>
 </body>
 </html>
-
