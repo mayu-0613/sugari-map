@@ -8,8 +8,14 @@
     html, body { margin:0; height:100%; background:#000; overflow:hidden; }
     .screen { position:fixed; inset:0; display:none; }
     .screen.active { display:block; }
-    video { width:100%; height:100%; object-fit:cover; }
+
+    /* YouTube待機動画 */
+    #idleVideoWrap { width:100%; height:100%; }
+    #idleVideo { width:100%; height:100%; border:0; background:#000; }
+
+    /* Googleスライド */
     iframe { width:100%; height:100%; border:0; background:#000; }
+
     .hint {
       position:fixed; left:0; right:0; bottom:24px;
       text-align:center; color:rgba(255,255,255,.85);
@@ -21,9 +27,18 @@
 </head>
 <body>
 
-  <!-- 待機：動画ループ -->
+  <!-- 待機：YouTube動画ループ -->
   <div id="idle" class="screen active">
-    <video id="idleVideo" src="./main.mp4" autoplay muted loop playsinline></video>
+    <div id="idleVideoWrap">
+      <iframe
+        id="idleVideo"
+        src=""
+        title="Idle video"
+        frameborder="0"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
     <div class="hint">画面をタップして開始</div>
   </div>
 
@@ -33,8 +48,11 @@
   </div>
 
   <script>
-    // ★ここをあなたのスライドIDに置き換え（d/XXXXX の XXXXX）
+    // ★GoogleスライドID（d/XXXXX の XXXXX）
     const SLIDE_ID = "1XTp8s8WNJa6qFl9K2akNzSv43JRHN-pQ";
+
+    // ★YouTube動画ID（URLの v=XXXX の XXXX）を入れてください
+    const YOUTUBE_ID = "nKfVdy0jiLo";
 
     // 放置で戻るまでの時間（ミリ秒） 60秒 = 60000
     const IDLE_TIMEOUT_MS = 60000;
@@ -42,23 +60,33 @@
     const idleScreen = document.getElementById("idle");
     const exploreScreen = document.getElementById("explore");
     const slidesFrame = document.getElementById("slides");
-    const idleVideo = document.getElementById("idleVideo");
+    const idleVideoFrame = document.getElementById("idleVideo");
 
     let timer = null;
 
     function slideEmbedUrl() {
-      // rm=minimal：UI最小、start=false：自動開始しない
-      // ※必要なら start=true も可（スライドショー自動開始）
+      // start=false：自動開始しない（タップでリンク探索したい場合）
       return `https://docs.google.com/presentation/d/${SLIDE_ID}/embed?rm=minimal&start=false`;
+    }
+
+    function idleYoutubeUrl() {
+      // autoplay=1：自動再生（※mute=1が必須）
+      // loop=1 と playlist=ID：無限ループ
+      // controls=0：UI非表示（誤操作防止）
+      // playsinline=1：モバイルで全画面化しにくくする
+      return `https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&loop=1&playlist=${YOUTUBE_ID}&controls=0&modestbranding=1&playsinline=1&rel=0`;
     }
 
     function showIdle() {
       exploreScreen.classList.remove("active");
       idleScreen.classList.add("active");
+
+      // スライドを止める
       slidesFrame.src = "about:blank";
-      // 動画を確実に再開
-      idleVideo.currentTime = 0;
-      idleVideo.play().catch(() => {});
+
+      // YouTube待機動画を「再読み込み」して確実に再開
+      idleVideoFrame.src = idleYoutubeUrl();
+
       clearTimeout(timer);
       timer = null;
     }
@@ -66,6 +94,10 @@
     function showExplore() {
       idleScreen.classList.remove("active");
       exploreScreen.classList.add("active");
+
+      // 探索に入ったらYouTubeを止める（再生継続防止）
+      idleVideoFrame.src = "about:blank";
+
       slidesFrame.src = slideEmbedUrl();
       resetIdleTimer();
     }
@@ -92,7 +124,7 @@
       }, { passive:true });
     });
 
-    // 念のため：起動直後は待機
+    // 起動直後は待機（YouTube開始）
     showIdle();
   </script>
 </body>
