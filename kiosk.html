@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kiosk</title>
+  <style>
+    html, body { margin:0; height:100%; background:#000; overflow:hidden; }
+    .screen { position:fixed; inset:0; display:none; }
+    .screen.active { display:block; }
+    video { width:100%; height:100%; object-fit:cover; }
+    iframe { width:100%; height:100%; border:0; background:#000; }
+    .hint {
+      position:fixed; left:0; right:0; bottom:24px;
+      text-align:center; color:rgba(255,255,255,.85);
+      font: 20px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif;
+      pointer-events:none;
+      text-shadow:0 2px 8px rgba(0,0,0,.6);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 待機：動画ループ -->
+  <div id="idle" class="screen active">
+    <video id="idleVideo" src="./main.mp4" autoplay muted loop playsinline></video>
+    <div class="hint">画面をタップして開始</div>
+  </div>
+
+  <!-- 探索：Googleスライド（スライド1から） -->
+  <div id="explore" class="screen">
+    <iframe id="slides" allowfullscreen></iframe>
+  </div>
+
+  <script>
+    // ★ここをあなたのスライドIDに置き換え（d/XXXXX の XXXXX）
+    const SLIDE_ID = "1XTp8s8WNJa6qFl9K2akNzSv43JRHN-pQ";
+
+    // 放置で戻るまでの時間（ミリ秒） 60秒 = 60000
+    const IDLE_TIMEOUT_MS = 60000;
+
+    const idleScreen = document.getElementById("idle");
+    const exploreScreen = document.getElementById("explore");
+    const slidesFrame = document.getElementById("slides");
+    const idleVideo = document.getElementById("idleVideo");
+
+    let timer = null;
+
+    function slideEmbedUrl() {
+      // rm=minimal：UI最小、start=false：自動開始しない
+      // ※必要なら start=true も可（スライドショー自動開始）
+      return `https://docs.google.com/presentation/d/${SLIDE_ID}/embed?rm=minimal&start=false`;
+    }
+
+    function showIdle() {
+      exploreScreen.classList.remove("active");
+      idleScreen.classList.add("active");
+      slidesFrame.src = "about:blank";
+      // 動画を確実に再開
+      idleVideo.currentTime = 0;
+      idleVideo.play().catch(() => {});
+      clearTimeout(timer);
+      timer = null;
+    }
+
+    function showExplore() {
+      idleScreen.classList.remove("active");
+      exploreScreen.classList.add("active");
+      slidesFrame.src = slideEmbedUrl();
+      resetIdleTimer();
+    }
+
+    function resetIdleTimer() {
+      clearTimeout(timer);
+      timer = setTimeout(showIdle, IDLE_TIMEOUT_MS);
+    }
+
+    // 初回タップで探索開始（待機→スライド）
+    document.addEventListener("pointerdown", () => {
+      if (idleScreen.classList.contains("active")) {
+        showExplore();
+      } else {
+        // 探索中の操作は全部“操作あり”扱いにしてタイマー延長
+        resetIdleTimer();
+      }
+    });
+
+    // 触ってる間は戻らないように、よくある操作を全部拾う
+    ["pointermove","keydown","wheel","touchstart","mousemove"].forEach(ev => {
+      document.addEventListener(ev, () => {
+        if (exploreScreen.classList.contains("active")) resetIdleTimer();
+      }, { passive:true });
+    });
+
+    // 念のため：起動直後は待機
+    showIdle();
+  </script>
+</body>
+</html>
