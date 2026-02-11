@@ -69,13 +69,10 @@
       return `https://docs.google.com/presentation/d/${SLIDE_ID}/embed?rm=minimal&start=false`;
     }
 
-    function idleYoutubeUrl() {
-      // autoplay=1：自動再生（※mute=1が必須）
-      // loop=1 と playlist=ID：無限ループ
-      // controls=0：UI非表示（誤操作防止）
-      // playsinline=1：モバイルで全画面化しにくくする
-      return `https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=1&loop=1&playlist=${YOUTUBE_ID}&controls=0&modestbranding=1&playsinline=1&rel=0`;
-    }
+function idleYoutubeUrl() {
+  const mute = soundEnabled ? 0 : 1;
+  return `https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&mute=${mute}&loop=1&playlist=${YOUTUBE_ID}&controls=0&modestbranding=1&playsinline=1&rel=0`;
+}
 
     function showIdle() {
       exploreScreen.classList.remove("active");
@@ -107,15 +104,29 @@
       timer = setTimeout(showIdle, IDLE_TIMEOUT_MS);
     }
 
-    // 初回タップで探索開始（待機→スライド）
-    document.addEventListener("pointerdown", () => {
-      if (idleScreen.classList.contains("active")) {
-        showExplore();
-      } else {
-        // 探索中の操作は全部“操作あり”扱いにしてタイマー延長
-        resetIdleTimer();
-      }
-    });
+let firstTapDone = false;
+
+document.addEventListener("pointerdown", () => {
+  // 待機画面でのタップ
+  if (idleScreen.classList.contains("active")) {
+
+    // 1回目のタップ：音をONにして待機動画を音ありで再読み込み
+    if (!firstTapDone) {
+      firstTapDone = true;
+      soundEnabled = true;
+      idleVideoFrame.src = idleYoutubeUrl(); // ← mute=0で再ロード
+      return; // ← このタップでは探索に行かない
+    }
+
+    // 2回目のタップ：探索へ
+    showExplore();
+    return;
+  }
+
+  // 探索中はタイマー更新
+  resetIdleTimer();
+});
+
 
     // 触ってる間は戻らないように、よくある操作を全部拾う
     ["pointermove","keydown","wheel","touchstart","mousemove"].forEach(ev => {
@@ -126,6 +137,10 @@
 
     // 起動直後は待機（YouTube開始）
     showIdle();
+    firstTapDone = false;
+soundEnabled = false;
+
   </script>
 </body>
 </html>
+
