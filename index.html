@@ -24,7 +24,14 @@
       text-shadow:0 2px 8px rgba(0,0,0,.6);
     }
 
-    #rotateNotice{
+/* 縦向きのときは本体を触れない/見えないようにする */
+body.portrait #idle,
+body.portrait #explore {
+  display: none !important;
+}
+
+/* 回転案内は最前面に固定（iframeにも勝つ） */
+#rotateNotice{
   position: fixed;
   inset: 0;
   background: #000;
@@ -33,9 +40,11 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  z-index: 10000;
+  z-index: 2147483647;  /* ←最大級 */
   font-size: 20px;
+  padding: 24px;
 }
+
 
     
   </style>
@@ -142,15 +151,20 @@
     // 起動直後は待機（YouTube開始）
     showIdle();
 
-    function checkOrientation(){
-  const isPortrait = window.innerHeight > window.innerWidth;
-  document.getElementById("rotateNotice").style.display =
-    isPortrait ? "flex" : "none";
+function checkOrientation(){
+  const isPortrait = window.matchMedia("(orientation: portrait)").matches
+    || window.innerHeight > window.innerWidth;
+
+  document.body.classList.toggle("portrait", isPortrait);
+
+  const notice = document.getElementById("rotateNotice");
+  notice.style.display = isPortrait ? "flex" : "none";
 }
 
 window.addEventListener("resize", checkOrientation);
 window.addEventListener("orientationchange", checkOrientation);
 checkOrientation();
+
 
   </script>
 
@@ -161,5 +175,6 @@ checkOrientation();
   
 </body>
 </html>
+
 
 
