@@ -99,6 +99,34 @@
     const slidesFrame = document.getElementById("slides");
     const idleVideo = document.getElementById("idleVideo");
 
+    // 効果音（画面遷移用）
+const sfx = new Audio("./tap.mp3");
+sfx.preload = "auto";
+let audioUnlocked = false;
+
+function unlockAudioOnce() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+
+  // iPhone対策：ユーザー操作中に一度だけ再生→即停止で“解放”
+  sfx.muted = true;
+  sfx.play().then(() => {
+    sfx.pause();
+    sfx.currentTime = 0;
+    sfx.muted = false;
+  }).catch(() => {
+    // 失敗しても以後の操作で鳴ることがあるので握りつぶす
+    sfx.muted = false;
+  });
+}
+
+function playSfx() {
+  if (!audioUnlocked) return;
+  sfx.currentTime = 0;
+  sfx.play().catch(() => {});
+}
+
+    
     const sfx = new Audio("./tap.mp3");
 sfx.preload = "auto";
 let audioUnlocked = false;
@@ -225,6 +253,7 @@ function unlockAudioOnce() {
   </script>
 </body>
 </html>
+
 
 
 
