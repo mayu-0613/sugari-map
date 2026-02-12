@@ -8,8 +8,17 @@
   <meta name="application-name" content="須賀利マップ">
   <style>
     html, body { margin:0; height:100%; background:#000; overflow:hidden; }
-    .screen { position:fixed; inset:0; display:none; }
-    .screen.active { display:block; }
+.screen {
+  position: fixed;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
 
     /* 待機：MP4動画 */
     #idleVideoWrap { width:100%; height:100%; }
@@ -90,6 +99,36 @@
     const slidesFrame = document.getElementById("slides");
     const idleVideo = document.getElementById("idleVideo");
 
+    const sfx = new Audio("./tap.mp3");
+sfx.preload = "auto";
+let audioUnlocked = false;
+
+function playSfx() {
+  if (!audioUnlocked) return; // 解放前は鳴らさない
+  sfx.currentTime = 0;
+  sfx.play().catch(() => {});
+}
+
+// iPhone対策：最初のタップで音を“解放”
+function unlockAudioOnce() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  sfx.muted = true;
+  sfx.play().then(() => {
+    sfx.pause();
+    sfx.currentTime = 0;
+    sfx.muted = false;
+  }).catch(() => {
+    // 失敗しても次のタップでまた試せばOK
+    audioUnlocked = true;
+    sfx.muted = false;
+  });
+}
+
+
+
+    
+    
     const rotateBlock = document.getElementById("rotateBlock");
 
     let timer = null;
@@ -100,6 +139,7 @@
     }
 
     function showIdle() {
+        playSfx(); // ★追加
       exploreScreen.classList.remove("active");
       idleScreen.classList.add("active");
       slidesFrame.src = "about:blank";
@@ -111,6 +151,7 @@
     }
 
     function showExplore() {
+        playSfx(); // ★追加
       idleScreen.classList.remove("active");
       exploreScreen.classList.add("active");
       idleVideo.pause();
@@ -150,6 +191,7 @@
 
     // タップ挙動
     document.addEventListener("pointerdown", () => {
+        unlockAudioOnce(); // ★追加：最初のタップで音を使えるようにする
       // ★縦向きなら何もしない
       if (rotateBlock.style.display === "flex") return;
 
@@ -183,5 +225,6 @@
   </script>
 </body>
 </html>
+
 
 
