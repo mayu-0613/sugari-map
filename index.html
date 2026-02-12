@@ -22,10 +22,40 @@
       font: 20px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif;
       pointer-events:none;
       text-shadow:0 2px 8px rgba(0,0,0,.6);
+      z-index: 10;
+    }
+
+    /* ★追加：縦向きブロック（これが“横にしないと見れない”を実現） */
+    #rotateBlock {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      color: #fff;
+      display: none;          /* JSで縦の時だけflexにする */
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 9999;
+      padding: 24px;
+      font: 20px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    #rotateBlock .sub {
+      opacity: .75;
+      font-size: 14px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
+
+  <!-- ★追加：縦向きの時に被せる画面 -->
+  <div id="rotateBlock">
+    <div>
+      <div style="font-size:42px; margin-bottom:14px;">📱↔️</div>
+      <div>横向きにしてご覧ください</div>
+      <div class="sub">（縦向きでは再生・操作できません）</div>
+    </div>
+  </div>
 
   <!-- 待機：MP4動画ループ（最初は無音） -->
   <div id="idle" class="screen active">
@@ -37,6 +67,7 @@
         muted
         loop
         playsinline
+        webkit-playsinline
         preload="auto"
       ></video>
     </div>
@@ -49,10 +80,7 @@
   </div>
 
   <script>
-    // ★GoogleスライドID（d/XXXXX の XXXXX）
     const SLIDE_ID = "1XTp8s8WNJa6qFl9K2akNzSv43JRHN-pQ";
-
-    // 放置で戻るまでの時間（ミリ秒） 60秒 = 60000
     const IDLE_TIMEOUT_MS = 60000;
 
     const idleScreen = document.getElementById("idle");
@@ -60,10 +88,10 @@
     const slidesFrame = document.getElementById("slides");
     const idleVideo = document.getElementById("idleVideo");
 
-    let timer = null;
+    const rotateBlock = document.getElementById("rotateBlock");
 
-    // 0: 無音待機中 → 1: 音あり待機中 → 2: 探索中
-    let tapStage = 0;
+    let timer = null;
+    let tapStage = 0; // 0:無音 1:音あり 2:探索
 
     function slideEmbedUrl() {
       return `https://docs.google.com/presentation/d/${SLIDE_ID}/embed?rm=minimal&start=false`;
@@ -72,18 +100,10 @@
     function showIdle() {
       exploreScreen.classList.remove("active");
       idleScreen.classList.add("active");
-
-      // スライドを止める
       slidesFrame.src = "about:blank";
-
-      // 待機動画を再開（ここでは「音ありのまま」にしておくと展示が楽）
-      // もし「待機に戻ったら毎回無音」にしたいなら下の2行を有効化してね
-      // tapStage = 0;
-      // idleVideo.muted = true;
 
       idleVideo.currentTime = 0;
       idleVideo.play().catch(() => {});
-
       clearTimeout(timer);
       timer = null;
     }
@@ -91,10 +111,7 @@
     function showExplore() {
       idleScreen.classList.remove("active");
       exploreScreen.classList.add("active");
-
-      // 探索に入ったら待機動画は止める（音が残らないように）
       idleVideo.pause();
-
       slidesFrame.src = slideEmbedUrl();
       resetIdleTimer();
     }
@@ -108,11 +125,32 @@
       }, IDLE_TIMEOUT_MS);
     }
 
-    // タップ挙動：
-    // 待機画面 1回目：音ON
-    // 待機画面 2回目：探索へ
-    // 探索中：操作があったらタイマー延長
+    // ★追加：縦向き判定（縦なら完全ブロック＋動画停止）
+    function applyOrientationGuard() {
+      const isPortrait = window.matchMedia("(orientation: portrait)").matches
+        || window.innerHeight > window.innerWidth;
+
+      rotateBlock.style.display = isPortrait ? "flex" : "none";
+
+      if (isPortrait) {
+        // 縦のときは“再生・操作させない”
+        idleVideo.pause();
+      } else {
+        // 横に戻ったら待機画面を再開（無音から）
+        if (idleScreen.classList.contains("active")) {
+          idleVideo.play().catch(() => {});
+        }
+      }
+    }
+
+    window.addEventListener("resize", applyOrientationGuard);
+    window.addEventListener("orientationchange", applyOrientationGuard);
+
+    // タップ挙動
     document.addEventListener("pointerdown", () => {
+      // ★縦向きなら何もしない
+      if (rotateBlock.style.display === "flex") return;
+
       if (idleScreen.classList.contains("active")) {
         if (tapStage === 0) {
           tapStage = 1;
@@ -130,15 +168,16 @@
       }
     });
 
-    // 探索中の操作は全部“操作あり”扱いにしてタイマー延長
     ["pointermove","keydown","wheel","touchstart","mousemove"].forEach(ev => {
       document.addEventListener(ev, () => {
+        if (rotateBlock.style.display === "flex") return;
         if (exploreScreen.classList.contains("active")) resetIdleTimer();
       }, { passive:true });
     });
 
-    // 起動直後は待機
+    // 起動
     showIdle();
+    applyOrientationGuard();
   </script>
 </body>
 </html>
