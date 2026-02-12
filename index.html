@@ -115,7 +115,6 @@ function unlockAudioOnce() {
     sfx.currentTime = 0;
     sfx.muted = false;
   }).catch(() => {
-    // 失敗しても以後の操作で鳴ることがあるので握りつぶす
     sfx.muted = false;
   });
 }
@@ -125,36 +124,6 @@ function playSfx() {
   sfx.currentTime = 0;
   sfx.play().catch(() => {});
 }
-
-    
-    const sfx = new Audio("./tap.mp3");
-sfx.preload = "auto";
-let audioUnlocked = false;
-
-function playSfx() {
-  if (!audioUnlocked) return; // 解放前は鳴らさない
-  sfx.currentTime = 0;
-  sfx.play().catch(() => {});
-}
-
-// iPhone対策：最初のタップで音を“解放”
-function unlockAudioOnce() {
-  if (audioUnlocked) return;
-  audioUnlocked = true;
-  sfx.muted = true;
-  sfx.play().then(() => {
-    sfx.pause();
-    sfx.currentTime = 0;
-    sfx.muted = false;
-  }).catch(() => {
-    // 失敗しても次のタップでまた試せばOK
-    audioUnlocked = true;
-    sfx.muted = false;
-  });
-}
-
-
-
     
     
     const rotateBlock = document.getElementById("rotateBlock");
@@ -253,6 +222,7 @@ function unlockAudioOnce() {
   </script>
 </body>
 </html>
+
 
 
 
