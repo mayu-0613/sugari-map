@@ -187,27 +187,36 @@ function playSfx() {
     window.addEventListener("orientationchange", applyOrientationGuard);
 
     // タップ挙動
-    document.addEventListener("pointerdown", () => {
-        unlockAudioOnce(); // ★追加：最初のタップで音を使えるようにする
-      // ★縦向きなら何もしない
-      if (rotateBlock.style.display === "flex") return;
+document.addEventListener("pointerdown", () => {
+  unlockAudioOnce(); // ★最初のタップで必ず実行
 
-      if (idleScreen.classList.contains("active")) {
-        if (tapStage === 0) {
-          tapStage = 1;
-          idleVideo.muted = false;
-          idleVideo.play().catch(() => {});
-          return;
-        }
-        if (tapStage === 1) {
-          tapStage = 2;
-          showExplore();
-          return;
-        }
-      } else {
-        resetIdleTimer();
-      }
-    });
+  // 縦向きブロック中は何もしない
+  if (rotateBlock.style.display === "flex") return;
+
+  if (idleScreen.classList.contains("active")) {
+
+    // ① 無音 → 音ON
+    if (tapStage === 0) {
+      tapStage = 1;
+      idleVideo.muted = false;
+      idleVideo.play().catch(() => {});
+      return;
+    }
+
+    // ② 音ON → スライドへ
+    if (tapStage === 1) {
+      tapStage = 2;
+      playSfx();        // ★← ここで必ず鳴らす！！
+      showExplore();
+      return;
+    }
+
+  } else {
+    // スライド操作中
+    resetIdleTimer();
+  }
+});
+
 
     ["pointermove","keydown","wheel","touchstart","mousemove"].forEach(ev => {
       document.addEventListener(ev, () => {
@@ -222,6 +231,7 @@ function playSfx() {
   </script>
 </body>
 </html>
+
 
 
 
