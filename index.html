@@ -6,15 +6,6 @@
   <title>須賀利マップ</title>
   <meta name="apple-mobile-web-app-title" content="須賀利マップ">
   <meta name="application-name" content="須賀利マップ">
-  <!-- PWA設定 ここから -->
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#000000">
-
-  <!-- Android / iOS 両対応用（すでに一部入っているので補完） -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <!-- PWA設定 ここまで -->
-  
   <style>
     html, body { margin:0; height:100%; background:#000; overflow:hidden; }
 .screen {
@@ -140,14 +131,9 @@ function playSfx() {
     let timer = null;
     let tapStage = 0; // 0:無音 1:音あり 2:探索
 
-// ★ Googleスライド「埋め込み」で取得したURLをそのまま入れる
-const SLIDE_EMBED_URL =
-  "https://docs.google.com/presentation/d/1XTp8s8WNJa6qFl9K2akNzSv43JRHN-pQ/edit?usp=sharing&ouid=111479129160423703440&rtpof=true&sd=true";
-
-function slideEmbedUrl() {
-  return SLIDE_EMBED_URL;
-}
-
+    function slideEmbedUrl() {
+      return `https://docs.google.com/presentation/d/${SLIDE_ID}/embed?rm=minimal&start=false`;
+    }
 
     function showIdle() {
         playSfx(); // ★追加
@@ -243,21 +229,8 @@ document.addEventListener("pointerdown", () => {
     showIdle();
     applyOrientationGuard();
   </script>
-
-  <script>
-  // Service Worker 登録（PWAの必須）
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/sugari-map/sw.js").catch(console.error);
-    });
-  }
-</script>
-
 </body>
 </html>
-
-
-
 
 
 
