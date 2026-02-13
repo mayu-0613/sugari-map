@@ -87,7 +87,12 @@
 
   <!-- 探索：Googleスライド（スライド1から） -->
   <div id="explore" class="screen">
-    <iframe id="slides" allowfullscreen></iframe>
+    <iframe
+  id="slides"
+  allowfullscreen
+  sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+></iframe>
+
   </div>
 
   <script>
@@ -231,6 +236,7 @@ document.addEventListener("pointerdown", () => {
   </script>
 </body>
 </html>
+
 
 
 
