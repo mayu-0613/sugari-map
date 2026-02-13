@@ -91,7 +91,7 @@
   </div>
 
   <script>
-    const SLIDES_EMBED_URL = "https://docs.google.com/presentation/d/e/2PACX-1vTGsm1kPth4GOVyYlo_rorgvcI5XYd1ZXmwKLLKZT_40__uw9eQqEWFl9mfQ_gcHg/pubembed?start=false&loop=false&delayms=60000";
+    const SLIDE_ID = "1XTp8s8WNJa6qFl9K2akNzSv43JRHN-pQ";
     const IDLE_TIMEOUT_MS = 60000;
 
     const idleScreen = document.getElementById("idle");
@@ -132,7 +132,7 @@ function playSfx() {
     let tapStage = 0; // 0:無音 1:音あり 2:探索
 
     function slideEmbedUrl() {
-      return SLIDES_EMBED_URL;
+      return SLIDE_ID;
     }
 
     function showIdle() {
@@ -231,6 +231,7 @@ document.addEventListener("pointerdown", () => {
   </script>
 </body>
 </html>
+
 
 
 
