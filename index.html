@@ -140,9 +140,14 @@ function playSfx() {
     let timer = null;
     let tapStage = 0; // 0:無音 1:音あり 2:探索
 
-    function slideEmbedUrl() {
-      return `https://docs.google.com/presentation/d/${SLIDE_ID}/embed?rm=minimal&start=false`;
-    }
+// ★ Googleスライド「埋め込み」で取得したURLをそのまま入れる
+const SLIDE_EMBED_URL =
+  "https://docs.google.com/presentation/d/1XTp8s8WNJa6qFl9K2akNzSv43JRHN-pQ/edit?usp=sharing&ouid=111479129160423703440&rtpof=true&sd=true";
+
+function slideEmbedUrl() {
+  return SLIDE_EMBED_URL;
+}
+
 
     function showIdle() {
         playSfx(); // ★追加
@@ -250,6 +255,7 @@ document.addEventListener("pointerdown", () => {
 
 </body>
 </html>
+
 
 
 
