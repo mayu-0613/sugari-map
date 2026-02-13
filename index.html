@@ -6,43 +6,30 @@
   <title>須賀利マップ</title>
   <meta name="apple-mobile-web-app-title" content="須賀利マップ">
   <meta name="application-name" content="須賀利マップ">
+
   <style>
     html, body { margin:0; height:100%; background:#000; overflow:hidden; }
-.screen {
-  position: fixed;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 300ms ease;
-}
-.screen.active {
-  opacity: 1;
-  pointer-events: auto;
-}
 
-    /* 待機：MP4動画 */
-    #idleVideoWrap { width:100%; height:100%; }
-    #idleVideo { width:100%; height:100%; object-fit:contain; background:#000; }
-
-    /* Googleスライド */
-    iframe { width:100%; height:100%; border:0; background:#000; }
-
-    .hint {
-      position:fixed; left:0; right:0; bottom:24px;
-      text-align:center; color:rgba(255,255,255,.85);
-      font: 20px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif;
-      pointer-events:none;
-      text-shadow:0 2px 8px rgba(0,0,0,.6);
-      z-index: 10;
+    /* 画面フェード */
+    .screen{
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 260ms ease;
+    }
+    .screen.active{
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    /* ★追加：縦向きブロック（これが“横にしないと見れない”を実現） */
+    /* 縦向きブロック */
     #rotateBlock {
       position: fixed;
       inset: 0;
       background: #000;
       color: #fff;
-      display: none;          /* JSで縦の時だけflexにする */
+      display: none;
       align-items: center;
       justify-content: center;
       text-align: center;
@@ -55,11 +42,78 @@
       font-size: 14px;
       margin-top: 10px;
     }
+
+    /* 待機：MP4動画 */
+    #idleVideoWrap { width:100%; height:100%; }
+    #idleVideo { width:100%; height:100%; object-fit:contain; background:#000; }
+
+    /* ヒント */
+    .hint {
+      position:fixed; left:0; right:0; bottom:24px;
+      text-align:center; color:rgba(255,255,255,.88);
+      font: 18px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+      pointer-events:none;
+      text-shadow:0 2px 8px rgba(0,0,0,.6);
+      z-index: 10;
+    }
+
+    /* マップ（画像） */
+    .mapWrap{ position: fixed; inset:0; background:#000; }
+    .mapImg{
+      width: 100%;
+      height: 100%;
+      object-fit: contain;     /* 重要：スマホでも全体表示 */
+      display:block;
+      user-select:none;
+      -webkit-user-drag:none;
+      touch-action: manipulation;
+    }
+
+    /* 透明ボタン */
+    .hotspot{
+      position:absolute;
+      background: rgba(255,0,0,0);
+      border: none;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    /* 戻るボタン */
+    .backBtn{
+      position:absolute;
+      right: 16px;
+      bottom: 16px;
+      z-index: 20;
+      font: 15px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 0;
+      background: rgba(255,255,255,.14);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    /* 右上に「前へ/戻る」を置きたい時用（必要なら） */
+    .topBtn{
+      position:absolute;
+      right: 16px;
+      top: 16px;
+      z-index: 20;
+      font: 15px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 0;
+      background: rgba(255,255,255,.14);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
   </style>
 </head>
-<body>
 
-  <!-- ★追加：縦向きの時に被せる画面 -->
+<body>
+  <!-- 縦向きの時に被せる -->
   <div id="rotateBlock">
     <div>
       <div style="font-size:42px; margin-bottom:14px;">📱↔️</div>
@@ -68,7 +122,7 @@
     </div>
   </div>
 
-  <!-- 待機：MP4動画ループ（最初は無音） -->
+  <!-- 待機：MP4動画（最初は無音） -->
   <div id="idle" class="screen active">
     <div id="idleVideoWrap">
       <video
@@ -85,78 +139,269 @@
     <div class="hint">①タップで音ON　②もう一度タップで開始</div>
   </div>
 
-  <!-- 探索：Googleスライド（スライド1から） -->
-  <div id="explore" class="screen">
-    <iframe id="slides" allowfullscreen></iframe>
+  <!-- =========================
+       画面：尾鷲市（スタートの地図）
+       ========================= -->
+  <div id="owase" class="screen">
+    <div class="mapWrap">
+      <img class="mapImg" src="./assets/尾鷲市.png" alt="尾鷲市">
+
+      <!-- 仮：須賀利町へ -->
+      <button class="hotspot" style="left:55%; top:45%; width:18%; height:18%;" data-go="sugari" aria-label="須賀利町へ"></button>
+
+      <!-- 仮：船 -->
+      <button class="hotspot" style="left:20%; top:70%; width:15%; height:18%;" data-go="ship" aria-label="船"></button>
+
+      <!-- 仮：尾鷲港 -->
+      <button class="hotspot" style="left:70%; top:70%; width:18%; height:18%;" data-go="owase-port" aria-label="尾鷲港"></button>
+
+      <button class="backBtn" data-go="idle" type="button">🎥 動画へ戻る</button>
+    </div>
   </div>
 
+  <!-- 船 -->
+  <div id="ship" class="screen">
+    <div class="mapWrap">
+      <img class="mapImg" src="./assets/船.png" alt="船">
+      <button class="backBtn" data-go="owase" type="button">← 戻る</button>
+    </div>
+  </div>
+
+  <!-- 尾鷲港 -->
+  <div id="owase-port" class="screen">
+    <div class="mapWrap">
+      <img class="mapImg" src="./assets/尾鷲港.png" alt="尾鷲港">
+      <button class="backBtn" data-go="owase" type="button">← 戻る</button>
+    </div>
+  </div>
+
+  <!-- =========================
+       画面：須賀利町（ここに「動画へ戻る」を置くのが理想）
+       ========================= -->
+  <div id="sugari" class="screen">
+    <div class="mapWrap">
+      <img class="mapImg" src="./assets/須賀利町.png" alt="須賀利町">
+
+      <!-- 仮：小学校エリア -->
+      <button class="hotspot" style="left:12%; top:20%; width:25%; height:22%;" data-go="area-school" aria-label="小学校エリア"></button>
+
+      <!-- 仮：高宮神社エリア -->
+      <button class="hotspot" style="left:40%; top:25%; width:25%; height:22%;" data-go="area-takamiya" aria-label="高宮神社エリア"></button>
+
+      <!-- 仮：普済寺エリア -->
+      <button class="hotspot" style="left:68%; top:25%; width:25%; height:22%;" data-go="area-fusaiji" aria-label="普済寺エリア"></button>
+
+      <button class="backBtn" data-go="idle" type="button">🎥 動画へ戻る</button>
+      <button class="topBtn" data-go="owase" type="button">← 尾鷲市へ</button>
+    </div>
+  </div>
+
+  <!-- ========== 小学校エリア ========== -->
+  <div id="area-school" class="screen">
+    <div class="mapWrap">
+      <img class="mapImg" src="./assets/小学校エリア.png" alt="小学校エリア">
+
+      <button class="hotspot" style="left:15%; top:55%; width:25%; height:25%;" data-go="spot-school-yard" aria-label="須賀利小学校 校庭"></button>
+      <button class="hotspot" style="left:42%; top:55%; width:25%; height:25%;" data-go="spot-gym" aria-label="体育館"></button>
+      <button class="hotspot" style="left:69%; top:55%; width:25%; height:25%;" data-go="spot-school" aria-label="須賀利小学校"></button>
+
+      <button class="backBtn" data-go="sugari" type="button">← 戻る</button>
+    </div>
+  </div>
+
+  <div id="spot-school-yard" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/須賀利小学校　校庭.png" alt="須賀利小学校 校庭">
+    <button class="backBtn" data-go="area-school" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-gym" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/体育館.png" alt="体育館">
+    <button class="backBtn" data-go="area-school" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-school" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/須賀利小学校.png" alt="須賀利小学校">
+    <button class="backBtn" data-go="area-school" type="button">← 戻る</button>
+  </div></div>
+
+  <!-- ========== 高宮神社エリア ========== -->
+  <div id="area-takamiya" class="screen">
+    <div class="mapWrap">
+      <img class="mapImg" src="./assets/高宮神社エリア.png" alt="高宮神社エリア">
+
+      <button class="hotspot" style="left:10%; top:20%; width:22%; height:18%;" data-go="spot-fishing-port" aria-label="須賀利漁港"></button>
+      <button class="hotspot" style="left:35%; top:20%; width:22%; height:18%;" data-go="spot-nakazawa" aria-label="中沢商店"></button>
+      <button class="hotspot" style="left:60%; top:20%; width:22%; height:18%;" data-go="spot-shimamto" aria-label="しまもと"></button>
+
+      <button class="hotspot" style="left:10%; top:45%; width:22%; height:18%;" data-go="spot-beiju" aria-label="米寿の手形"></button>
+      <button class="hotspot" style="left:35%; top:45%; width:22%; height:18%;" data-go="spot-takamiya" aria-label="高宮神社"></button>
+      <button class="hotspot" style="left:60%; top:45%; width:22%; height:18%;" data-go="spot-gyomin" aria-label="漁民センター"></button>
+
+      <button class="hotspot" style="left:10%; top:70%; width:22%; height:18%;" data-go="spot-junkosen" aria-label="巡行船須賀利丸"></button>
+      <button class="hotspot" style="left:35%; top:70%; width:47%; height:18%;" data-go="spot-koji" aria-label="趣のある須賀利小路"></button>
+
+      <button class="backBtn" data-go="sugari" type="button">← 戻る</button>
+    </div>
+  </div>
+
+  <div id="spot-fishing-port" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/須賀利漁港.png" alt="須賀利漁港">
+    <button class="backBtn" data-go="area-takamiya" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-nakazawa" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/中沢商店.png" alt="中沢商店">
+    <button class="backBtn" data-go="area-takamiya" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-shimamto" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/しまもと.png" alt="しまもと">
+    <button class="backBtn" data-go="area-takamiya" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-beiju" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/米寿の手形.png" alt="米寿の手形">
+    <button class="backBtn" data-go="area-takamiya" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-takamiya" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/高宮神社.png" alt="高宮神社">
+    <button class="backBtn" data-go="area-takamiya" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-gyomin" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/漁民センター.png" alt="漁民センター">
+    <button class="backBtn" data-go="area-takamiya" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-junkosen" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/巡行船須賀利丸.png" alt="巡行船須賀利丸">
+    <button class="backBtn" data-go="area-takamiya" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-koji" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/趣のある須賀利小路.png" alt="趣のある須賀利小路">
+    <button class="backBtn" data-go="area-takamiya" type="button">← 戻る</button>
+  </div></div>
+
+  <!-- ========== 普済寺エリア ========== -->
+  <div id="area-fusaiji" class="screen">
+    <div class="mapWrap">
+      <img class="mapImg" src="./assets/普済寺エリア.png" alt="普済寺エリア">
+
+      <button class="hotspot" style="left:10%; top:20%; width:22%; height:18%;" data-go="spot-sento" aria-label="元銭湯"></button>
+      <button class="hotspot" style="left:35%; top:20%; width:22%; height:18%;" data-go="spot-taneya" aria-label="種屋"></button>
+      <button class="hotspot" style="left:60%; top:20%; width:30%; height:18%;" data-go="spot-view" aria-label="普済寺からの眺め"></button>
+
+      <button class="hotspot" style="left:10%; top:45%; width:30%; height:18%;" data-go="spot-tuna" aria-label="マグロの供養塔"></button>
+      <button class="hotspot" style="left:45%; top:45%; width:22%; height:18%;" data-go="spot-fusaiji" aria-label="普済寺"></button>
+      <button class="hotspot" style="left:70%; top:45%; width:22%; height:18%;" data-go="spot-stairs" aria-label="長い階段"></button>
+
+      <button class="hotspot" style="left:10%; top:70%; width:45%; height:18%;" data-go="spot-houses" aria-label="海を臨む家々"></button>
+
+      <button class="backBtn" data-go="sugari" type="button">← 戻る</button>
+    </div>
+  </div>
+
+  <div id="spot-sento" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/元銭湯.png" alt="元銭湯">
+    <button class="backBtn" data-go="area-fusaiji" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-taneya" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/種屋.png" alt="種屋">
+    <button class="backBtn" data-go="area-fusaiji" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-view" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/普済寺からの眺め.png" alt="普済寺からの眺め">
+    <button class="backBtn" data-go="area-fusaiji" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-tuna" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/マグロの供養塔.png" alt="マグロの供養塔">
+    <button class="backBtn" data-go="area-fusaiji" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-fusaiji" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/普済寺.png" alt="普済寺">
+    <button class="backBtn" data-go="area-fusaiji" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-stairs" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/長い階段.png" alt="長い階段">
+    <button class="backBtn" data-go="area-fusaiji" type="button">← 戻る</button>
+  </div></div>
+
+  <div id="spot-houses" class="screen"><div class="mapWrap">
+    <img class="mapImg" src="./assets/海を臨む家々.png" alt="海を臨む家々">
+    <button class="backBtn" data-go="area-fusaiji" type="button">← 戻る</button>
+  </div></div>
+
   <script>
-    const SLIDE_ID = "1XTp8s8WNJa6qFl9K2akNzSv43JRHN-pQ";
     const IDLE_TIMEOUT_MS = 60000;
 
-    const idleScreen = document.getElementById("idle");
-    const exploreScreen = document.getElementById("explore");
-    const slidesFrame = document.getElementById("slides");
-    const idleVideo = document.getElementById("idleVideo");
-
-    // 効果音（画面遷移用）
-const sfx = new Audio("./tap.mp3");
-sfx.preload = "auto";
-let audioUnlocked = false;
-
-function unlockAudioOnce() {
-  if (audioUnlocked) return;
-  audioUnlocked = true;
-
-  // iPhone対策：ユーザー操作中に一度だけ再生→即停止で“解放”
-  sfx.muted = true;
-  sfx.play().then(() => {
-    sfx.pause();
-    sfx.currentTime = 0;
-    sfx.muted = false;
-  }).catch(() => {
-    sfx.muted = false;
-  });
-}
-
-function playSfx() {
-  if (!audioUnlocked) return;
-  sfx.currentTime = 0;
-  sfx.play().catch(() => {});
-}
-    
-    
     const rotateBlock = document.getElementById("rotateBlock");
+    const idleScreen = document.getElementById("idle");
+    const idleVideo  = document.getElementById("idleVideo");
 
     let timer = null;
-    let tapStage = 0; // 0:無音 1:音あり 2:探索
+    let tapStage = 0; // 0:無音 1:音あり 2:マップ中
 
-    function slideEmbedUrl() {
-      return `https://docs.google.com/presentation/d/${SLIDE_ID}/embed?rm=minimal&start=false`;
+    // 効果音
+    const sfx = new Audio("./tap.mp3");
+    sfx.preload = "auto";
+    let audioUnlocked = false;
+
+    function unlockAudioOnce(){
+      if (audioUnlocked) return;
+      audioUnlocked = true;
+      sfx.muted = true;
+      sfx.play().then(() => {
+        sfx.pause();
+        sfx.currentTime = 0;
+        sfx.muted = false;
+      }).catch(() => {
+        sfx.muted = false;
+      });
     }
 
-    function showIdle() {
-        playSfx(); // ★追加
-      exploreScreen.classList.remove("active");
-      idleScreen.classList.add("active");
-      slidesFrame.src = "about:blank";
+    function playSfx(){
+      if (!audioUnlocked) return;
+      try{
+        sfx.currentTime = 0;
+        sfx.play().catch(() => {});
+      }catch(e){}
+    }
+
+    function setActiveScreen(id){
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      const el = document.getElementById(id);
+      if (el) el.classList.add("active");
+    }
+
+    function showIdle(){
+      setActiveScreen("idle");
+      clearTimeout(timer);
+      timer = null;
 
       idleVideo.currentTime = 0;
       idleVideo.play().catch(() => {});
-      clearTimeout(timer);
-      timer = null;
     }
 
-    function showExplore() {
-        playSfx(); // ★追加
-      idleScreen.classList.remove("active");
-      exploreScreen.classList.add("active");
+    function showStartMap(){
+      // 最初に入るマップは「尾鷲市」に固定（好みでsugariにしてもOK）
+      setActiveScreen("owase");
       idleVideo.pause();
-      slidesFrame.src = slideEmbedUrl();
       resetIdleTimer();
     }
 
-    function resetIdleTimer() {
+    function showScreen(id){
+      setActiveScreen(id);
+      resetIdleTimer();
+    }
+
+    function resetIdleTimer(){
       clearTimeout(timer);
       timer = setTimeout(() => {
         tapStage = 0;
@@ -165,18 +410,15 @@ function playSfx() {
       }, IDLE_TIMEOUT_MS);
     }
 
-    // ★追加：縦向き判定（縦なら完全ブロック＋動画停止）
-    function applyOrientationGuard() {
+    function applyOrientationGuard(){
       const isPortrait = window.matchMedia("(orientation: portrait)").matches
         || window.innerHeight > window.innerWidth;
 
       rotateBlock.style.display = isPortrait ? "flex" : "none";
 
       if (isPortrait) {
-        // 縦のときは“再生・操作させない”
         idleVideo.pause();
       } else {
-        // 横に戻ったら待機画面を再開（無音から）
         if (idleScreen.classList.contains("active")) {
           idleVideo.play().catch(() => {});
         }
@@ -186,43 +428,49 @@ function playSfx() {
     window.addEventListener("resize", applyOrientationGuard);
     window.addEventListener("orientationchange", applyOrientationGuard);
 
-    // タップ挙動
-document.addEventListener("pointerdown", () => {
-  unlockAudioOnce(); // ★最初のタップで必ず実行
+    // 画面全体タップ（動画の2段階）
+    document.addEventListener("pointerdown", () => {
+      unlockAudioOnce();
 
-  // 縦向きブロック中は何もしない
-  if (rotateBlock.style.display === "flex") return;
+      if (rotateBlock.style.display === "flex") return;
 
-  if (idleScreen.classList.contains("active")) {
+      if (idleScreen.classList.contains("active")) {
+        if (tapStage === 0) {
+          tapStage = 1;
+          idleVideo.muted = false;
+          idleVideo.play().catch(() => {});
+          return;
+        }
+        if (tapStage === 1) {
+          tapStage = 2;
+          playSfx();
+          showStartMap();
+          return;
+        }
+      } else {
+        resetIdleTimer();
+      }
+    });
 
-    // ① 無音 → 音ON
-    if (tapStage === 0) {
-      tapStage = 1;
-      idleVideo.muted = false;
-      idleVideo.play().catch(() => {});
-      return;
-    }
+    // data-go クリックで画面遷移（新しいタブは開かない）
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-go]");
+      if (!btn) return;
+      if (rotateBlock.style.display === "flex") return;
 
-    // ② 音ON → スライドへ
-    if (tapStage === 1) {
-      tapStage = 2;
-      playSfx();        // ★← ここで必ず鳴らす！！
-      showExplore();
-      return;
-    }
+      e.preventDefault();
+      e.stopPropagation();
 
-  } else {
-    // スライド操作中
-    resetIdleTimer();
-  }
-});
+      playSfx();
 
-
-    ["pointermove","keydown","wheel","touchstart","mousemove"].forEach(ev => {
-      document.addEventListener(ev, () => {
-        if (rotateBlock.style.display === "flex") return;
-        if (exploreScreen.classList.contains("active")) resetIdleTimer();
-      }, { passive:true });
+      const to = btn.dataset.go;
+      if (to === "idle") {
+        tapStage = 0;
+        idleVideo.muted = true;
+        showIdle();
+        return;
+      }
+      showScreen(to);
     });
 
     // 起動
@@ -231,8 +479,6 @@ document.addEventListener("pointerdown", () => {
   </script>
 </body>
 </html>
-
-
 
 
 
