@@ -1,0 +1,22 @@
+{
+  "name": "須賀利マップ",
+  "short_name": "須賀利マップ",
+  "description": "来場者向け案内マップ",
+  "start_url": "/sugari-map/?pwa=1",
+  "scope": "/sugari-map/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/sugari-map/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/sugari-map/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
