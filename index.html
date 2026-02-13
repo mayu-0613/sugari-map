@@ -166,20 +166,34 @@
       </div>
     
       <!-- 船 -->
-      <div id="ship" class="screen">
-        <div class="mapWrap">
-          <img class="mapImg" src="./assets/船.png" alt="船">
-          <button class="backBtn" data-go="owase" type="button">← 戻る</button>
-        </div>
-      </div>
+<div id="ship" class="screen">
+  <div class="mapWrap">
+    <img class="mapImg" src="./assets/船.png" alt="船">
+
+    <!-- ★追加：左上「マップに戻る」 -->
+    <button class="hotspot"
+      style="left:2%; top:2%; width:28%; height:10%;"
+      data-go="owase" aria-label="マップに戻る"></button>
+
+    <!-- ←この backBtn は削除 -->
+  </div>
+</div>
+
     
       <!-- 尾鷲港 -->
-      <div id="owase-port" class="screen">
-        <div class="mapWrap">
-          <img class="mapImg" src="./assets/尾鷲港.png" alt="尾鷲港">
-          <button class="backBtn" data-go="owase" type="button">← 戻る</button>
-        </div>
-      </div>
+<div id="owase-port" class="screen">
+  <div class="mapWrap">
+    <img class="mapImg" src="./assets/尾鷲港.png" alt="尾鷲港">
+
+    <!-- ★追加：左上「マップに戻る」 -->
+    <button class="hotspot"
+      style="left:2%; top:2%; width:28%; height:10%;"
+      data-go="owase" aria-label="マップに戻る"></button>
+
+    <!-- ←この backBtn は削除 -->
+  </div>
+</div>
+
     
       <!-- =========================
            画面：須賀利町（ここに「動画へ戻る」を置くのが理想）
@@ -187,7 +201,10 @@
       <div id="sugari" class="screen">
         <div class="mapWrap">
           <img class="mapImg" src="./assets/須賀利町.png" alt="須賀利町">
-    
+        <button class="hotspot"
+      style="left:2%; top:2%; width:28%; height:10%;"
+      data-go="owase" aria-label="マップに戻る"></button>
+
           <!-- 仮：小学校エリア -->
           <button class="hotspot" style="left:12%; top:20%; width:25%; height:22%;" data-go="area-school" aria-label="小学校エリア"></button>
     
@@ -197,8 +214,6 @@
           <!-- 仮：普済寺エリア -->
           <button class="hotspot" style="left:68%; top:25%; width:25%; height:22%;" data-go="area-fusaiji" aria-label="普済寺エリア"></button>
     
-          <button class="backBtn" data-go="idle" type="button">🎥 動画へ戻る</button>
-          <button class="topBtn" data-go="owase" type="button">← 尾鷲市へ</button>
         </div>
       </div>
     
@@ -488,5 +503,6 @@
     
     
     
+
 
 
